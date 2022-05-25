@@ -1,7 +1,8 @@
 from django.db              import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from users.models           import User, TimeStampModel
+from users.models           import User
+from core.models            import TimeStampModel
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
@@ -79,5 +80,10 @@ class Cart(models.Model):
     quantity = models.IntegerField()
     
     class Meta:
-        db_table = "carts"
-        unique_together = ('user', 'product')
+        db_table    = "carts"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["user", "product"],
+                name   = "unique carts"
+            )
+        ]

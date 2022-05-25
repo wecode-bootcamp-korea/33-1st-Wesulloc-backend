@@ -1,7 +1,8 @@
 from django.db       import models
 
-from users.models    import User, TimeStampModel
+from users.models    import User
 from products.models import Product
+from core.models     import TimeStampModel
 
 class OrderStatus(models.Model):
     status = models.CharField(max_length=20)

@@ -5,7 +5,7 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, F
 
-from products.models  import Product, Category, MainCategory
+from products.models  import Product, Category, MainCategory, ProductImage
 
 
 class ProductListView(View):
@@ -52,9 +52,10 @@ class ProductListView(View):
                     "price"        : product.price,
                     "discount_rate": product.discount_rate,
                     "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
-                    "sale_or_not"  : False if product.discount_rate == 0 else True
+                    "sale_or_not"  : False if product.discount_rate == 0 else True,
+                    "img_url"      : [image.img_url for image in product.productimage_set.all()]
                     } for product in products]
-        
+
             return JsonResponse({'results': products_list}, status=200)
 
         except Product.DoesNotExist:

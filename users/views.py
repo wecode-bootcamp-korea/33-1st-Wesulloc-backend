@@ -1,12 +1,12 @@
 from django.views import View
 from .models import User
 from django.http import JsonResponse
-from django.conf    import settings
+from wesulloc.settings   import SECRET_KEY, ALGORITHM
 import json, re, bcrypt, jwt
 
 
 
-#http -v POST http://localhost:8000/users/signup user_name=최바다 user_email=choibaba@naver.com  user_password=1234qweq@@ user_account=1 user_address=주소 user_contact=1234 user_birth=1982-04-22 user_gender=남 user_terms_agreements={'1':'2'} user_created_at=1970-01-01 00:00:01.000000 user_updated_at=1970-01-01 00:00:01.000000
+#http -v POST http://localhost:8000/users/signup user_name=최바다 user_email=choibaba@naver.com  user_password=1234qweq@@ user_account=1 user_address=주소 user_contact=1234 user_birth=1982-04-22 user_gender=남 user_terms_agreements={'1':'2'} 
 
 class SignUpView(View):
     def post(self, request):
@@ -77,7 +77,7 @@ class LogInView(View):
             if not bcrypt.checkpw(data['user_password'].encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({"message" : "INVALID_PASSWORD"}, status=401)
 
-            access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
+            access_token = jwt.encode({"id" : user.id}, SECRET_KEY, algorithm = ALGORITHM)
 
             return JsonResponse({
                  "message"      : "SUCCESS",

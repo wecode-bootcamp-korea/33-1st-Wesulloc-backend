@@ -13,7 +13,7 @@ class ProductListView(View):
             category      = request.GET.get('category', None)
             search        = request.GET.get('search')
             sort          = request.GET.get('sort', 'new')
-            limit         = int(request.GET.get('limit', 4))
+            limit         = int(request.GET.get('limit', 10))
             offset        = int(request.GET.get('offset',0))
 
             q = Q()
@@ -38,8 +38,7 @@ class ProductListView(View):
                 'low_price' : 'price'
                 }
 
-            products = Product.objects.filter(q)\
-                        .annotate(total_sales=Count('orderitem__id') * F('orderitem__quantity')\
+            products = Product.objects.filter(q).annotate(total_sales=Count('orderitem__quantity')\
                         , total_reviews=Count('review__id')).distinct()\
                         .order_by(sort_type.get(sort))[offset:offset+limit]
 
@@ -54,6 +53,29 @@ class ProductListView(View):
                     } for product in products]
 
             return JsonResponse({'results': products_list}, status=200)
+
+        except Product.DoesNotExist:
+            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+
+class ProductDetailView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            product = Product.objects.get(id=kwargs["product_id"])
+
+            product_detail = {
+                    "id"           : product.id,
+                    "img_url"      : [image.img_url for image in product.productimage_set.all()],
+                    "name"         : product.name,
+                    "price"        : product.price,
+                    "discount_rate": product.discount_rate,
+                    "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
+                    "sale_or_not"  : False if product.discount_rate == 0 else True,
+                    "description"  : product.description,
+                    "category"     : product.categoryproduct_set.filter().last().category.name,
+                    "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
+                    }
+
+            return JsonResponse({'results': product_detail}, status=200)
 
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)

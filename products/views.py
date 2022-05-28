@@ -1,11 +1,8 @@
-import json
-from json.decoder     import JSONDecodeError
-
 from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, F
 
-from products.models  import Product, Category, MainCategory, ProductImage
+from products.models  import Product
 
 
 class ProductListView(View):

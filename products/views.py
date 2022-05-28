@@ -14,13 +14,13 @@ class ProductListView(View):
             menu          = request.GET.get('menu', None)
             main_category = request.GET.get('main_category', None)
             category      = request.GET.get('category', None)
-            search        = request.GET.get('name')
+            search        = request.GET.get('search')
             sort          = request.GET.get('sort', 'new')
             limit         = int(request.GET.get('limit', 4))
             offset        = int(request.GET.get('offset',0))
 
             q = Q()
-            
+
             if menu:
                 q &= Q(categoryproduct__category__main_category__menu__id = menu)
 

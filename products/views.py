@@ -14,7 +14,7 @@ class ProductListView(View):
             menu          = request.GET.get('menu', None)
             main_category = request.GET.get('main_category', None)
             category      = request.GET.get('category', None)
-            searching     = request.GET.get('name')
+            search        = request.GET.get('name')
             sort          = request.GET.get('sort', 'new')
             limit         = int(request.GET.get('limit', 4))
             offset        = int(request.GET.get('offset',0))
@@ -30,8 +30,8 @@ class ProductListView(View):
             if category:
                 q &= Q(categoryproduct__category = category)
 
-            if searching:
-                q &= Q(name_icontains=searching)
+            if search:
+                q &= Q(name__icontains = search)
 
             sort_type = {
                 'reviews'   : '-total_reviews',

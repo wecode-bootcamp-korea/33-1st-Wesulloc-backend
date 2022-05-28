@@ -39,7 +39,7 @@ class ProductListView(View):
                 }
 
             products = Product.objects.filter(q)\
-                        .annotate(total_sales=Count('orderitem__id') * F('orderitem__quantity')\
+                        .annotate(total_sales=Count('orderitem__quantity')\
                         , total_reviews=Count('review__id')).distinct()\
                         .order_by(sort_type.get(sort))[offset:offset+limit]
 

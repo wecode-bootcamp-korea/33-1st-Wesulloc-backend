@@ -1,6 +1,6 @@
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Q, Count, F
+from django.db.models import Q, Count, F, Sum
 
 from products.models  import Product
 
@@ -38,8 +38,8 @@ class ProductListView(View):
                 'low_price' : 'price'
                 }
 
-            products = Product.objects.filter(q).annotate(total_sales=Count('orderitem__quantity')\
-                        , total_reviews=Count('review__id')).distinct()\
+            products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
+                        .annotate(total_reviews=Count('review__id', distinct=True))\
                         .order_by(sort_type.get(sort))[offset:offset+limit]
 
             products_list = [{

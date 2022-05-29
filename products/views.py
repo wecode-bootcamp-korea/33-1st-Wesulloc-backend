@@ -4,7 +4,6 @@ from django.db.models import Q, Count, F, Sum
 
 from products.models  import Product
 
-
 class ProductListView(View):
     def get(self, request):
         try:
@@ -13,7 +12,7 @@ class ProductListView(View):
             category      = request.GET.get('category', None)
             search        = request.GET.get('search')
             sort          = request.GET.get('sort', 'new')
-            limit         = int(request.GET.get('limit', 10))
+            limit         = int(request.GET.get('limit', 12))
             offset        = int(request.GET.get('offset',0))
 
             q = Q()
@@ -34,8 +33,8 @@ class ProductListView(View):
                 'reviews'   : '-total_reviews',
                 'sales'     : '-total_sales',
                 'new'       : '-id',
-                'high_price': '-price',
-                'low_price' : 'price'
+                'price_desc': '-price',
+                'price_asc' : 'price'
                 }
 
             products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\

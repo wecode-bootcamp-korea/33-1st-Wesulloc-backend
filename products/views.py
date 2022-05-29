@@ -4,7 +4,6 @@ from django.db.models import Q, Count, F, Sum
 
 from products.models  import Product
 
-
 class ProductListView(View):
     def get(self, request):
         try:
@@ -13,7 +12,7 @@ class ProductListView(View):
             category      = request.GET.get('category', None)
             search        = request.GET.get('search')
             sort          = request.GET.get('sort', 'new')
-            limit         = int(request.GET.get('limit', 10))
+            limit         = int(request.GET.get('limit', 12))
             offset        = int(request.GET.get('offset',0))
 
             q = Q()
@@ -34,8 +33,8 @@ class ProductListView(View):
                 'reviews'   : '-total_reviews',
                 'sales'     : '-total_sales',
                 'new'       : '-id',
-                'high_price': '-price',
-                'low_price' : 'price'
+                'price_desc': '-price',
+                'price_asc' : 'price'
                 }
 
             products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
@@ -50,7 +49,7 @@ class ProductListView(View):
                     "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
                     "sale_or_not"  : False if product.discount_rate == 0 else True,
                     "img_url"      : [image.img_url for image in product.productimage_set.all()]
-                    } for product in products]
+            } for product in products]
 
             return JsonResponse({'results': products_list}, status=200)
 
@@ -60,9 +59,12 @@ class ProductListView(View):
 class ProductDetailView(View):
     def get(self, request, *args, **kwargs):
         try:
-            product = Product.objects.get(id=kwargs["product_id"])
+            limit   = int(request.GET.get('limit', 4))
+            offset  = int(request.GET.get('offset',0))
+            recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
+            products = Product.objects.filter(id=kwargs["product_id"])
 
-            product_detail = {
+            product_detail = [{
                     "id"           : product.id,
                     "img_url"      : [image.img_url for image in product.productimage_set.all()],
                     "name"         : product.name,
@@ -73,9 +75,16 @@ class ProductDetailView(View):
                     "description"  : product.description,
                     "category"     : product.categoryproduct_set.filter().last().category.name,
                     "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
-                    }
+            } for product in products]
 
-            return JsonResponse({'results': product_detail}, status=200)
+            product_recommendation = [{
+                    "id" : recommendation.id,
+                    "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
+                    "name" : recommendation.name,
+                    "price" : recommendation.price,
+            } for recommendation in recommendations]
+            
+            return JsonResponse({'recommendation': product_recommendation, 'deatils' : product_detail}, status=200)
 
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)

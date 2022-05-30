@@ -38,10 +38,10 @@ class ProductListView(View):
             q &= Q(categoryproduct__category__main_category__menu__id = menu)
 
         if main_category:
-            q &= Q(categoryproduct__category__main_category = main_category)
+            q &= Q(categoryproduct__category__main_category__id = main_category)
 
         if category:
-            q &= Q(categoryproduct__category = category)
+            q &= Q(categoryproduct__category__id = category)
 
         if search:
             q &= Q(name__icontains = search)

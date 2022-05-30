@@ -1,6 +1,6 @@
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Q, Count, F, Sum
+from django.db.models import Q, Count, Sum
 
 from products.models  import Product, MainCategory, Category, Menu
 
@@ -31,15 +31,21 @@ class ProductListView(View):
         sort          = request.GET.get('sort', 'new')
         limit         = int(request.GET.get('limit', 12))
         offset        = int(request.GET.get('offset',0))
+
         q = Q()
+
         if menu:
             q &= Q(categoryproduct__category__main_category__menu__id = menu)
+
         if main_category:
             q &= Q(categoryproduct__category__main_category = main_category)
+
         if category:
             q &= Q(categoryproduct__category = category)
+
         if search:
             q &= Q(name__icontains = search)
+
         sort_type = {
             'reviews'   : '-total_reviews',
             'sales'     : '-total_sales',
@@ -47,6 +53,7 @@ class ProductListView(View):
             'price_desc': '-price',
             'price_asc' : 'price'
             }
+
         products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
                     .annotate(total_reviews=Count('review__id', distinct=True))\
                     .order_by(sort_type.get(sort))[offset:offset+limit]
@@ -60,4 +67,5 @@ class ProductListView(View):
                 "sale_or_not"  : False if product.discount_rate == 0 else True,
                 "img_url"      : [image.img_url for image in product.productimage_set.all()],
         } for product in products]
+
         return JsonResponse({'results': products_list}, status=200)

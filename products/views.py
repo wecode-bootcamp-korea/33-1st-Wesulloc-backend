@@ -8,14 +8,14 @@ class CategoryView(View):
     def get(self, reqeust):
         try:
             category_list = [{
-                'menu_id' : menu.id,
-                'menu_name' : menu.name,
-                'main_category' : [{
-                    'main_category_id' : main_category.id,
-                    'main_category_name' : main_category.name,
-                    'category' : [{
-                        'category_id': category.id,
-                        'category_name' : category.name,
+                'menu_id'      : menu.id,
+                'menu_name'    : menu.name,
+                'main_category': [{
+                    'main_category_id'  : main_category.id,
+                    'main_category_name': main_category.name,
+                    'category'          : [{
+                        'category_id'  : category.id,
+                        'category_name': category.name,
                     } for category in Category.objects.filter(main_category=main_category.id)]
                 } for main_category in MainCategory.objects.filter(menu_id=menu.id)]
             } for menu in Menu.objects.all()]

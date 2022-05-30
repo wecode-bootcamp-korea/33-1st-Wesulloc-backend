@@ -1,4 +1,5 @@
 import json
+from unicodedata import category
 from django import views
 from django.http      import JsonResponse
 from django.views     import View
@@ -79,15 +80,16 @@ class ProductListView(View):
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
 
+
 class ProductDetailView(View):
     def get(self, request, *args, **kwargs):
         try:
             limit   = int(request.GET.get('limit', 4))
             offset  = int(request.GET.get('offset',0))
             recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
-            products = Product.objects.filter(id=kwargs["product_id"])
+            product = Product.objects.get(id=kwargs["product_id"])
 
-            product_detail = [{
+            product_detail = {
                     "id"           : product.id,
                     "img_url"      : [image.img_url for image in product.productimage_set.all()],
                     "name"         : product.name,
@@ -98,7 +100,7 @@ class ProductDetailView(View):
                     "description"  : product.description,
                     "category"     : product.categoryproduct_set.filter().last().category.name,
                     "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
-            } for product in products]
+            }
 
             product_recommendation = [{
                     "id" : recommendation.id,

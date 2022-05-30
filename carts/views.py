@@ -7,23 +7,23 @@ from users.models     import User
 from products.models  import ProductImage
 from carts.models     import Cart
 
-"""장바구니 구현 관련 (CART 구현)"""
-"""
-[ {
-    id: 1,
-    name: '영귤섬 아이스티',
-    packingState: '포장불가',
-    price: 13000,
-    amount: 1,
-  },
-]
-"""
+# """장바구니 구현 관련 (CART 구현)"""
+# """
+# [ {
+#     id: 1,
+#     name: '영귤섬 아이스티',
+#     packingState: '포장불가',
+#     price: 13000,
+#     amount: 1,
+#   },
+# ]
+# """
 class CartView(View):
     #@login_decorator
     def get(self, request):
         try:
             # user = request.user
-            carts = Cart.objects.filter(user_id=1)
+            carts = Cart.objects.filter(user_id=1) # 데코레이터 들어오면 수정해야함
 
             cart_list = [{
                 # "user_id" : user.id,
@@ -35,7 +35,7 @@ class CartView(View):
                 "quantity" : cart.quantity,
             } for cart in carts]
 
-            return JsonResponse({"cart_list" : cart_list}, status=200)
+            return JsonResponse({"results" : cart_list}, status=200)
         
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
@@ -45,12 +45,12 @@ class CartView(View):
         try:
             data = json.loads(request.body)
             # user = request.user
-            user = User.objects.get(id=1)
+            # 데코레이터 들어오면 빼줘야함           
             product_id = int(data['product_id'])
             quantity = int(data['quantity'])
 
             cart, created = Cart.objects.get_or_create(
-                user_id = user.id,
+                user_id = User.objects.get(id=1).id,
                 product_id = product_id,
                 quantity = quantity
             )
@@ -64,15 +64,15 @@ class CartView(View):
             
 
 
-            return JsonResponse
+    #         return JsonResponse
 
-        except KeyError:
-            return JsonResponse
+    #     except KeyError:
+    #         return JsonResponse
 
-    def patch(self, request):
+    # def patch(self, request):
 
-        return
+    #     return
 
-    def delete(self, request):
+    # def delete(self, request):
 
-        return
+    #     return

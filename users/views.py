@@ -1,12 +1,17 @@
+import json
+import re
+import bcrypt
+import jwt
+
 from django.views import View
-from .models import User
 from django.http import JsonResponse
+
+from users.models import User
 from wesulloc.settings   import SECRET_KEY, ALGORITHM
-import json, re, bcrypt, jwt
 
 
 
-#http -v POST http://localhost:8000/users/signup user_name=최바다 user_email=choibaba@naver.com  user_password=1234qweq@@ user_account=1 user_address=주소 user_contact=1234 user_birth=1982-04-22 user_gender=남 user_terms_agreements={'1':'2'} 
+#http -v POST http://localhost:8000/user/signup user_name=최바다 user_email=choibaba@naver.com  user_password=1234qweq@@ user_account=1 user_address=주소 user_contact=1234 user_birth=1982-04-22 user_gender=남 user_terms_agreements={'1':'2'} 
 
 class SignUpView(View):
     def post(self, request):
@@ -29,9 +34,6 @@ class SignUpView(View):
             REX_PASSWORD = "^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$"
             REX_BIRTH    = "^(19[0-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
 
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
 
@@ -47,8 +49,9 @@ class SignUpView(View):
             if not re.match(REX_BIRTH, birth):
                 return JsonResponse({"Message": "INVALID_BIRTH"}, status=400)
 
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
             User.objects.create(
-       
                 account          = account,
                 name             = name,
                 email            = email,
@@ -64,7 +67,6 @@ class SignUpView(View):
         
         except KeyError:
             return JsonResponse({'Message': 'KEY_ERROR'}, status=400)
-
 
 
 class LogInView(View):
@@ -91,6 +93,6 @@ class LogInView(View):
             return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
 
         except User.DoesNotExist:
-            return JsonResponse({"message" : "INVALID_EMAIL"}, status=401)
+            return JsonResponse({"message" : "INVALID_EMAIL"}, status=404)
 
-#http -v POST http://localhost:8000/users/login user_email=choibaba@naver.com  user_password=1234qweq@@
+#http -v POST http://localhost:8000/user/login user_email=choibaba@naver.com  user_password=1234qweq@@

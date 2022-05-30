@@ -2,7 +2,7 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, F, Sum
 
-from products.models  import Product
+from products.models  import Product, MainCategory, Category
 
 class ProductListView(View):
     def get(self, request):
@@ -40,7 +40,7 @@ class ProductListView(View):
             products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
                         .annotate(total_reviews=Count('review__id', distinct=True))\
                         .order_by(sort_type.get(sort))[offset:offset+limit]
-
+            
             products_list = [{
                     "id"           : product.id,
                     "name"         : product.name,
@@ -48,10 +48,15 @@ class ProductListView(View):
                     "discount_rate": product.discount_rate,
                     "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
                     "sale_or_not"  : False if product.discount_rate == 0 else True,
-                    "img_url"      : [image.img_url for image in product.productimage_set.all()]
-                    } for product in products]
+                    "img_url"      : [image.img_url for image in product.productimage_set.all()],
+            } for product in products]
 
-            return JsonResponse({'results': products_list}, status=200)
+            category_list = [{
+                    "main_category" : MainCategory.objects.get(id=2).name,
+                    "category" : [category.name for category in Category.objects.filter(main_category_id=2)],
+            }]
+
+            return JsonResponse({'products_list': products_list, 'category_list': category_list}, status=200)
 
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)

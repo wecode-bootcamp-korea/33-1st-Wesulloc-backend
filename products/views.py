@@ -4,7 +4,28 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, F, Sum
 
-from products.models  import Product, Cart, ProductImage, Category, MainCategory
+from products.models  import Product, Cart, ProductImage, Category, MainCategory, Menu
+
+class CategoryView(View):
+    def get(self, reqeust):
+        try:
+            category_list = [{
+                'menu_id'      : menu.id,
+                'menu_name'    : menu.name,
+                'main_category': [{
+                    'main_category_id'  : main_category.id,
+                    'main_category_name': main_category.name,
+                    'category'          : [{
+                        'category_id'  : category.id,
+                        'category_name': category.name,
+                    } for category in Category.objects.filter(main_category=main_category.id)]
+                } for main_category in MainCategory.objects.filter(menu_id=menu.id)]
+            } for menu in Menu.objects.all()]
+
+            return JsonResponse({"results" : category_list}, status=200)
+
+        except Product.DoesNotExist:
+            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
 
 class ProductListView(View):
     def get(self, request):
@@ -42,7 +63,7 @@ class ProductListView(View):
             products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
                         .annotate(total_reviews=Count('review__id', distinct=True))\
                         .order_by(sort_type.get(sort))[offset:offset+limit]
-
+            
             products_list = [{
                     "id"           : product.id,
                     "name"         : product.name,
@@ -53,12 +74,7 @@ class ProductListView(View):
                     "img_url"      : [image.img_url for image in product.productimage_set.all()],
             } for product in products]
 
-            category_list = [{
-                    "main_category" : MainCategory.objects.get(id=2).name,
-                    "category" : [category.name for category in Category.objects.filter(main_category_id=2)],
-            }]
-
-            return JsonResponse({'products_list': products_list, 'category_list': category_list}, status=200)
+            return JsonResponse({'results': products_list}, status=200)
 
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)

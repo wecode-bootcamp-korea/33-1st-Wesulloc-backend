@@ -1,6 +1,5 @@
 import json
-from unicodedata import category
-from django import views
+
 from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, Sum

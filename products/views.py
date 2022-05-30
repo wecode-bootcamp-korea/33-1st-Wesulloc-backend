@@ -25,9 +25,6 @@ class CategoryView(View):
 
             return JsonResponse({"results" : category_list}, status=200)
 
-        except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
-
 class ProductListView(View):
     def get(self, request):
         try:
@@ -77,16 +74,9 @@ class ProductListView(View):
 
             return JsonResponse({'results': products_list}, status=200)
 
-        except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
-
-
 class ProductDetailView(View):
     def get(self, request, *args, **kwargs):
         try:
-            limit   = int(request.GET.get('limit', 4))
-            offset  = int(request.GET.get('offset',0))
-            recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
             product = Product.objects.get(id=kwargs["product_id"])
 
             product_detail = {
@@ -102,6 +92,20 @@ class ProductDetailView(View):
                     "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
             }
 
+            return JsonResponse({'results' : product_detail}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=401)
+        except Product.DoesNotExist:
+            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+
+class RecommendationView(View):
+    def get(self, request):
+        try:
+            limit   = int(request.GET.get('limit', 4))
+            offset  = int(request.GET.get('offset',0))
+            recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
+
             product_recommendation = [{
                     "id" : recommendation.id,
                     "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
@@ -109,78 +113,94 @@ class ProductDetailView(View):
                     "price" : recommendation.price,
             } for recommendation in recommendations]
             
-            return JsonResponse({'recommendation': product_recommendation, 'details' : product_detail}, status=200)
+            return JsonResponse({'results' : product_recommendation}, status=200)
 
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=401)
         except Product.DoesNotExist:
             return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
 
-# """장바구니 구현 관련 (CART 구현)"""
-# """
-# [ {
-#     id: 1,
-#     name: '영귤섬 아이스티',
-#     packingState: '포장불가',
-#     price: 13000,
-#     amount: 1,
-#   },
-#   {
-#     id: 2,
-#     name: '러블리 티 박스',
-#     packingState: '포장가능',
-#     price: 20000,
-#     amount: 1,
-#   },
-#   {
-#     id: 3,
-#     name: '그린티 랑드샤 세트',
-#     packingState: '포장불가',
-#     price: 36000,
-#     amount: 1,
-#   },
-# ]
-# """
-# class CartView(View):
-#     #@login_decorator
-#     def get(self, request):
-#         try:
-#             # user = request.user
-#             carts = Cart.objects.filter(user_id=1)
+"""장바구니 구현 관련 (CART 구현)"""
+"""
+[ {
+    id: 1,
+    name: '영귤섬 아이스티',
+    packingState: '포장불가',
+    price: 13000,
+    amount: 1,
+  },
+  {
+    id: 2,
+    name: '러블리 티 박스',
+    packingState: '포장가능',
+    price: 20000,
+    amount: 1,
+  },
+  {
+    id: 3,
+    name: '그린티 랑드샤 세트',
+    packingState: '포장불가',
+    price: 36000,
+    amount: 1,
+  },
+]
+"""
+class CartView(View):
+    #@login_decorator
+    def get(self, request):
+        try:
+            # user = request.user
+            carts = Cart.objects.filter(user_id=1)
 
-#             cart_list = [{
-#                 # "user_id" : user.id,
-#                 "cart_id" : cart.id,
-#                 "product_id" : cart.product.id,
-#                 "product_name" : cart.product.name,
-#                 "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
-#                 "price" : cart.product.price,
-#                 "quantity" : cart.quantity,
-#             } for cart in carts]
+            cart_list = [{
+                # "user_id" : user.id,
+                "cart_id" : cart.id,
+                "product_id" : cart.product.id,
+                "product_name" : cart.product.name,
+                "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
+                "price" : cart.product.price,
+                "quantity" : cart.quantity,
+            } for cart in carts]
 
-#             return JsonResponse({"cart_list" : cart_list}, status=200)
+            return JsonResponse({"cart_list" : cart_list}, status=200)
         
-#         except KeyError:
-#             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
     
-#     # @login_decorator
-#     def post(self, request):
-#         try:
-#             data = json.loads(request.body)
-#             # user = request.user
-#             product_id = int(data['product_id'])
-#             quantity = int(data['quantity'])
+    # @login_decorator
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            # user = request.user
+            product_id = int(data['product_id'])
+            quantity = int(data['quantity'])
+
+            cart, created = Cart.objects.get_or_create(
+                user_id = user.id,
+                product_id = product_id,
+                quantity = quantity
+            )
+            cart.save()
+            return JsonResponse({"message" : "SUCCESS"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        except Cart.DoesNotExist:
+            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=400)
+            
 
 
-#             return JsonResponse
+            return JsonResponse
 
-#         except KeyError:
-#             return JsonResponse
+        except KeyError:
+            return JsonResponse
 
-#     def patch(self, request):
+    def patch(self, request):
 
-#         return
+        return
 
-#     def delete(self, request):
+    def delete(self, request):
 
-#         return
+        return
 
     

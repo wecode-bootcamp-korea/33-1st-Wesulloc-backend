@@ -11,7 +11,7 @@ class CartView(View):
     @access_token_check
     def get(self, request):
         user = request.user
-        carts = Cart.objects.filter(user_id = user.id)
+        carts = Cart.objects.prefetch_related('productimage_set').filter(user_id = user.id)
         cart_list = [{
             "user_id" : user.id,
             "cart_id" : cart.id,

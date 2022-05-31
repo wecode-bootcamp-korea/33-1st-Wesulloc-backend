@@ -98,14 +98,14 @@ class ProductDetailView(View):
 
 class RecommendationView(View):
     def get(self, request):
-        limit   = int(request.GET.get('limit', 4))
-        offset  = int(request.GET.get('offset',0))
-        recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
+        limit                  = int(request.GET.get('limit', 4))
+        offset                 = int(request.GET.get('offset',0))
+        recommendations        = Product.objects.all().order_by("?")[offset:offset+limit]
         product_recommendation = [{
-                "id" : recommendation.id,
-                "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
-                "name" : recommendation.name,
-                "price" : recommendation.price,
+                "id"     : recommendation.id,
+                "img_url": [image.img_url for image in recommendation.productimage_set.all()],
+                "name"   : recommendation.name,
+                "price"  : recommendation.price,
         } for recommendation in recommendations]
         
         return JsonResponse({'results' : product_recommendation}, status=200)

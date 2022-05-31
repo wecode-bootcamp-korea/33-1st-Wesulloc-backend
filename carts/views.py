@@ -30,7 +30,7 @@ class CartView(View):
                 "cart_id" : cart.id,
                 "product_id" : cart.product.id,
                 "product_name" : cart.product.name,
-                # "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
+                "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
                 "price" : cart.product.price,
                 "quantity" : cart.quantity,
             } for cart in carts]
@@ -83,45 +83,20 @@ class CartView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
         except Cart.DoesNotExist:
-            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
             
+    def delete(self, request):
+        try:
+            # user = request.user
+            user = User.objects.get(id=1)
+            cart_id = request.GET.getlist('cart_id')
 
+            cart = Cart.objects.get(id__in=cart_id, user_id=user.id)
+            cart.delete()
 
-
-            """
-            data = json.loads(request.body)
-
-            if data['count'] <= 0 or data['count'] >= 21:
-
-                
-                return JsonResponse({'message': 'INVALID_COUNT'}, status=400)
-
-            if Cart.objects.filter(id=cart_id).exists():
-                cart = Cart.objects.get(
-                    id   =cart_id, 
-                    user =request.user
-                )
-                cart.count = data['count']
-                cart.save()
-                return JsonResponse({'message': 'COUNT_CHANGED'}, status=201)
-            return JsonResponse({'message': 'CART_DOES_NOT_EXIT'}, status=404)
+            return JsonResponse({"message" : "SUCCESS"}, status=200)
 
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=401)
-            """
-
-
-
-
-    #         return JsonResponse
-
-    #     except KeyError:
-    #         return JsonResponse
-
-    # def patch(self, request):
-
-    #     return
-
-    # def delete(self, request):
-
-    #     return
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        except Cart.DoesNotExist:
+            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)

@@ -39,7 +39,7 @@ class SignUpView(View):
 
             if not re.match(REX_ACCOUNT, account):
                 return JsonResponse({"Message": "INVALID_ACCOUNT"}, status=400)
-               
+            
             if not re.match(REX_MAIL, email):
                 return JsonResponse({"Message": "INVALID_MAIL"}, status=400)
 
@@ -82,8 +82,8 @@ class LogInView(View):
             access_token = jwt.encode({"id" : user.id}, SECRET_KEY, algorithm = ALGORITHM)
 
             return JsonResponse({
-                 "message"      : "SUCCESS",
-                 "access_token" : access_token
+                "message"      : "SUCCESS",
+                "access_token" : access_token
             }, status=200)
 
         except KeyError:

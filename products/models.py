@@ -44,7 +44,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    img_url = models.URLField()
+    img_url = models.URLField(max_length=500)
 
     class Meta:
         db_table = "product_images"
@@ -62,35 +62,3 @@ class Seasonal(models.Model):
 
     class Meta:
         db_table = "seasonals"
-
-class Review(models.Model):
-    user        = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    product     = models.ForeignKey('Product', on_delete=models.CASCADE)
-    content     = models.TextField()
-    rating      = models.DecimalField(max_digits=2, decimal_places=1, null=True)
-    created_at  = models.DateField(auto_now_add=True)
-    modified_at = models.DateField(auto_now=True)
-
-    class Meta:
-        db_table = "reviews"
-    
-class ReviewImage(models.Model):
-    review  = models.ForeignKey('Review', on_delete=models.CASCADE)
-    img_url = models.URLField(max_length=500)
-
-    class Meta:
-        db_table = "review_images"
-
-class Cart(models.Model):
-    user     = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    product  = models.ForeignKey('Product', on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    
-    class Meta:
-        db_table    = "carts"
-        constraints = [
-            models.UniqueConstraint(
-                fields = ["user", "product"],
-                name   = "unique carts"
-            )
-        ]

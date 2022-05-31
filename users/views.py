@@ -28,11 +28,11 @@ class SignUpView(View):
             birth            = data['user_birth']
             gender           = data['user_gender']
             terms_agreements = data['user_terms_agreements']
-
-            REX_ACCOUNT  = "^[a-z]+[a-z0-9]{5,19}$"
-            REX_MAIL     = "^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-            REX_PASSWORD = "^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$"
-            REX_BIRTH    = "^(19[0-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$"
+            
+            REX_ACCOUNT  = '^[a-z]+[a-z0-9]{5,19}$'
+            REX_MAIL     = '^[a-z0-9_+.-]+@([a-z0-9-]+\.)+[a-z0-9]{2,4}$'
+            REX_PASSWORD = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
+            REX_BIRTH    = '^(19[0-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'
 
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
@@ -74,7 +74,7 @@ class LogInView(View):
         try:
             data = json.loads(request.body)
 
-            user = User.objects.get(email=data['user_email'])
+            user = User.objects.get(account=data['user_account'])
 
             if not bcrypt.checkpw(data['user_password'].encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({"message" : "INVALID_PASSWORD"}, status=401)
@@ -93,6 +93,6 @@ class LogInView(View):
             return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
 
         except User.DoesNotExist:
-            return JsonResponse({"message" : "INVALID_EMAIL"}, status=404)
+            return JsonResponse({"message" : "INVALID_ACCOUNT"}, status=404)
 
 #http -v POST http://localhost:8000/user/login user_email=choibaba@naver.com  user_password=1234qweq@@

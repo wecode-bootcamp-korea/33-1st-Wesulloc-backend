@@ -8,7 +8,7 @@ def access_token_check(func):
     def wrapper(self,request,*args,**kwargs):
         try:
             access_token = request.headers.get('Authorization')
-            payload      = jwt.decode(access_token, SECRET_KEY,ALGORITHM)
+            payload      = jwt.decode(access_token, SECRET_KEY, ALGORITHM)
             
             request.user = User.objects.get(id = payload['id'])
 

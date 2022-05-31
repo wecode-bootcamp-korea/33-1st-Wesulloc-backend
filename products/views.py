@@ -94,25 +94,18 @@ class ProductDetailView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=401)
         except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 404)
 
 class RecommendationView(View):
     def get(self, request):
-        try:
-            limit   = int(request.GET.get('limit', 4))
-            offset  = int(request.GET.get('offset',0))
-            recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
-
-            product_recommendation = [{
-                    "id" : recommendation.id,
-                    "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
-                    "name" : recommendation.name,
-                    "price" : recommendation.price,
-            } for recommendation in recommendations]
-            
-            return JsonResponse({'results' : product_recommendation}, status=200)
-
-        except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=401)
-        except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+        limit   = int(request.GET.get('limit', 4))
+        offset  = int(request.GET.get('offset',0))
+        recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
+        product_recommendation = [{
+                "id" : recommendation.id,
+                "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
+                "name" : recommendation.name,
+                "price" : recommendation.price,
+        } for recommendation in recommendations]
+        
+        return JsonResponse({'results' : product_recommendation}, status=200)

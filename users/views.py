@@ -4,14 +4,10 @@ import bcrypt
 import jwt
 
 from django.views import View
-from django.http import JsonResponse
+from django.http  import JsonResponse
 
-from users.models import User
-from wesulloc.settings   import SECRET_KEY, ALGORITHM
-
-
-
-#http -v POST http://localhost:8000/user/signup user_name=최바다 user_email=choibaba@naver.com  user_password=1234qweq@@ user_account=1 user_address=주소 user_contact=1234 user_birth=1982-04-22 user_gender=남 user_terms_agreements={'1':'2'} 
+from users.models  import User
+from django.conf   import settings
 
 class SignUpView(View):
     def post(self, request):
@@ -36,6 +32,12 @@ class SignUpView(View):
 
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
+
+            if User.objects.filter(accountt=account).exists():
+                return JsonResponse({"Message": "ERROR_ACCOUNT_ALREADY_EXIST"}, status=400)
+
+            if User.objects.filter(contact=contact).exists():
+                return JsonResponse({"Message": "ERROR_CONTACT_ALREADY_EXIST"}, status=400)
 
             if not re.match(REX_ACCOUNT, account):
                 return JsonResponse({"Message": "INVALID_ACCOUNT"}, status=400)
@@ -68,18 +70,17 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({'Message': 'KEY_ERROR'}, status=400)
 
-
 class LogInView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            user = User.objects.get(email=data['user_email'])
+            user = User.objects.get(account=data['user_account'])
 
             if not bcrypt.checkpw(data['user_password'].encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({"message" : "INVALID_PASSWORD"}, status=401)
 
-            access_token = jwt.encode({"id" : user.id}, SECRET_KEY, algorithm = ALGORITHM)
+            access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
 
             return JsonResponse({
                 "message"      : "SUCCESS",
@@ -93,6 +94,4 @@ class LogInView(View):
             return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
 
         except User.DoesNotExist:
-            return JsonResponse({"message" : "INVALID_EMAIL"}, status=404)
-
-#http -v POST http://localhost:8000/user/login user_email=choibaba@naver.com  user_password=1234qweq@@
+            return JsonResponse({"message" : "INVALID_ACCOUNT"}, status=404)

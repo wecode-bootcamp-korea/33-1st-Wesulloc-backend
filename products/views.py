@@ -1,13 +1,20 @@
 import json
+# import logging
 
 from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q, Count, Sum
 
-from products.models  import Product, MainCategory, Category, Menu
+from products.models  import Product, Menu
+
+
+# logger = logging.getLogger()
 
 class CategoryView(View):
     def get(self, reqeust):
+        menus = Menu.objects.all()
+        menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
+
         category_list = [{
             'menu_id'      : menu.id,
             'menu_name'    : menu.name,
@@ -17,9 +24,9 @@ class CategoryView(View):
                 'category'          : [{
                     'category_id'  : category.id,
                     'category_name': category.name,
-                } for category in Category.objects.filter(main_category=main_category.id)]
-            } for main_category in MainCategory.objects.filter(menu_id=menu.id)]
-        } for menu in Menu.objects.all()]
+                } for category in main_category.category_set.all()]
+            } for main_category in menu.maincategory_set.all()]
+        } for menu in menus]
 
         return JsonResponse({"results" : category_list}, status=200)
 
@@ -32,6 +39,14 @@ class ProductListView(View):
         sort          = request.GET.get('sort', 'new')
         limit         = int(request.GET.get('limit', 12))
         offset        = int(request.GET.get('offset',0))
+
+        # filter_set = {
+        #     'main_category' : 'categoryproduct__category__main_category__id',
+        #     'menu' : 'categoryproduct__category__main_category__menu__id',
+        #     'category' : 'categoryproduct__category__id'
+        # }
+
+        # filter = {filter_set[key] : value for key, value in request.GET.items()}
 
         q = Q()
 
@@ -56,8 +71,13 @@ class ProductListView(View):
             }
 
         products = Product.objects.filter(q).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
-                    .annotate(total_reviews=Count('review__id', distinct=True))\
-                    .order_by(sort_type.get(sort))[offset:offset+limit]
+            .annotate(total_reviews=Count('review__id', distinct=True))\
+            .order_by(sort_type.get(sort))[offset:offset+limit]
+        
+        # products = Product.objects.filter(**filter).annotate(total_sales=Sum('orderitem__quantity', distinct=True))\
+        #             .annotate(total_reviews=Count('review__id', distinct=True))\
+        #             .order_by(sort_type.get(sort))[offset:offset+limit]
+        # **filter:: unpacking!!
         
         products_list = [{
                 "id"           : product.id,
@@ -74,7 +94,7 @@ class ProductListView(View):
 class ProductDetailView(View):
     def get(self, request, *args, **kwargs):
         try:
-            product = Product.objects.get(id=kwargs["product_id"])
+            product = Product.objects.prefetch_related('productimage_set').get(id=kwargs["product_id"])
 
             product_detail = {
                     "id"           : product.id,
@@ -92,27 +112,27 @@ class ProductDetailView(View):
             return JsonResponse({'results' : product_detail}, status=200)
 
         except KeyError:
+            # logger.error(f"""
+            #     error_meesage : {
+            #         "function" : ProductDetailView.get(),
+            #         "message" : keyError,
+            #         "input" : {..}
+            #     }
+            # {}""")
             return JsonResponse({"message" : "KEY_ERROR"}, status=401)
         except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 404)
 
 class RecommendationView(View):
     def get(self, request):
-        try:
-            limit   = int(request.GET.get('limit', 4))
-            offset  = int(request.GET.get('offset',0))
-            recommendations = Product.objects.all().order_by("?")[offset:offset+limit]
-
-            product_recommendation = [{
-                    "id" : recommendation.id,
-                    "img_url" : [image.img_url for image in recommendation.productimage_set.all()],
-                    "name" : recommendation.name,
-                    "price" : recommendation.price,
-            } for recommendation in recommendations]
-            
-            return JsonResponse({'results' : product_recommendation}, status=200)
-
-        except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=401)
-        except Product.DoesNotExist:
-            return JsonResponse({"message" : "PRODUCT_DOES_NOT_EXIST"}, status = 401)
+        limit                  = int(request.GET.get('limit', 4))
+        offset                 = int(request.GET.get('offset',0))
+        recommendations        = Product.objects.all().prefetch_related('productimage_set').order_by("?")[offset:offset+limit]
+        product_recommendation = [{
+                "id"     : recommendation.id,
+                "img_url": [image.img_url for image in recommendation.productimage_set.all()],
+                "name"   : recommendation.name,
+                "price"  : recommendation.price,
+        } for recommendation in recommendations]
+        
+        return JsonResponse({'results' : product_recommendation}, status=200)

@@ -2,78 +2,62 @@ import json
 
 from django.http      import JsonResponse
 from django.views     import View
+from core.utils       import access_token_check
 
 from users.models     import User
-from products.models  import ProductImage
 from carts.models     import Cart
 
-# """장바구니 구현 관련 (CART 구현)"""
-# """
-# [ {
-#     id: 1,
-#     name: '영귤섬 아이스티',
-#     packingState: '포장불가',
-#     price: 13000,
-#     amount: 1,
-#   },
-# ]
-# """
 class CartView(View):
-    #@login_decorator
+    @access_token_check
     def get(self, request):
-        try:
-            # user = request.user
-            carts = Cart.objects.filter(user_id=1) # 데코레이터 들어오면 수정해야함
-
-            cart_list = [{
-                # "user_id" : user.id,
-                "cart_id" : cart.id,
-                "product_id" : cart.product.id,
-                "product_name" : cart.product.name,
-                "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
-                "price" : cart.product.price,
-                "quantity" : cart.quantity,
-            } for cart in carts]
-
-            return JsonResponse({"results" : cart_list}, status=200)
-        
-        except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        user = request.user
+        carts = Cart.objects.filter(user_id = user.id)
+        cart_list = [{
+            "user_id" : user.id,
+            "cart_id" : cart.id,
+            "product_id" : cart.product.id,
+            "product_name" : cart.product.name,
+            "product_img" : cart.product.productimage_set.first().img_url,
+            "price" : cart.product.price,
+            "quantity" : cart.quantity,
+        } for cart in carts]
+        return JsonResponse({"results" : cart_list}, status=200)
     
-    # @login_decorator
+    @access_token_check
     def post(self, request):
+        # POST /carts
         try:
             data = json.loads(request.body)
-            # user = request.user
-            # 데코레이터 들어오면 빼줘야함           
+            user = request.user          
             product_id = int(data['product_id'])
             quantity = int(data['quantity'])
 
             cart, created = Cart.objects.get_or_create(
-                user_id = User.objects.get(id=1).id, #데코레이터 들어오면 수정
+                user_id = user.id,
                 product_id = product_id,
-                quantity = quantity
+                defaults={"quantity" : quantity}
             )
-            
-            cart.save()
+
+            if not created:
+                cart.quantity += quantity
+                cart.save()
 
             return JsonResponse({"message" : "SUCCESS"}, status=201)
 
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
-        except Cart.DoesNotExist:
-            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=400)
-            
-    def patch(self, request):
+    
+    @access_token_check
+    def patch(self, request, cart_id):
+        # PATCH /carts/1
         try:
             data = json.loads(request.body)
 
-            # user = request.user
-            user = User.objects.get(id=1)
+            user = request.user
             cart_id = data['cart_id']
-            product_id = data['product_id']
             quantity = data['quantity']
-            cart = Cart.objects.get(id=cart_id, product_id=product_id, user_id=user.id)
+
+            cart = Cart.objects.get(id=cart_id, user_id=user.id)
 
             cart.quantity = quantity
             cart.save()
@@ -86,17 +70,11 @@ class CartView(View):
             return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
             
     def delete(self, request):
-        try:
-            # user = request.user
-            user = User.objects.get(id=1)
-            cart_id = request.GET.getlist('cart_id')
+        # DELETE /carts?ids=[1,2,3]
+        user = request.user
+        user = User.objects.get(id=1)
+        cart_ids = request.GET.getlist('cart_ids')
 
-            cart = Cart.objects.get(id__in=cart_id, user_id=user.id)
-            cart.delete()
+        Cart.objects.filter(id__in=cart_ids, user_id=user.id).delete()
 
-            return JsonResponse({"message" : "SUCCESS"}, status=200)
-
-        except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
-        except Cart.DoesNotExist:
-            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
+        return JsonResponse({"message" : "SUCCESS"}, status=200)

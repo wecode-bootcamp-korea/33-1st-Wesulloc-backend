@@ -30,7 +30,7 @@ class CartView(View):
                 "cart_id" : cart.id,
                 "product_id" : cart.product.id,
                 "product_name" : cart.product.name,
-                "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
+                # "product_img" : ProductImage.objects.get(id=cart.product.id).img_url,
                 "price" : cart.product.price,
                 "quantity" : cart.quantity,
             } for cart in carts]
@@ -50,11 +50,13 @@ class CartView(View):
             quantity = int(data['quantity'])
 
             cart, created = Cart.objects.get_or_create(
-                user_id = User.objects.get(id=1).id,
+                user_id = User.objects.get(id=1).id, #데코레이터 들어오면 수정
                 product_id = product_id,
                 quantity = quantity
             )
+            
             cart.save()
+
             return JsonResponse({"message" : "SUCCESS"}, status=201)
 
         except KeyError:
@@ -62,6 +64,53 @@ class CartView(View):
         except Cart.DoesNotExist:
             return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=400)
             
+    def patch(self, request):
+        try:
+            data = json.loads(request.body)
+
+            # user = request.user
+            user = User.objects.get(id=1)
+            cart_id = data['cart_id']
+            product_id = data['product_id']
+            quantity = data['quantity']
+            cart = Cart.objects.get(id=cart_id, product_id=product_id, user_id=user.id)
+
+            cart.quantity = quantity
+            cart.save()
+
+            return JsonResponse({"message" : "SUCCESS"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        except Cart.DoesNotExist:
+            return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=400)
+            
+
+
+
+            """
+            data = json.loads(request.body)
+
+            if data['count'] <= 0 or data['count'] >= 21:
+
+                
+                return JsonResponse({'message': 'INVALID_COUNT'}, status=400)
+
+            if Cart.objects.filter(id=cart_id).exists():
+                cart = Cart.objects.get(
+                    id   =cart_id, 
+                    user =request.user
+                )
+                cart.count = data['count']
+                cart.save()
+                return JsonResponse({'message': 'COUNT_CHANGED'}, status=201)
+            return JsonResponse({'message': 'CART_DOES_NOT_EXIT'}, status=404)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=401)
+            """
+
+
 
 
     #         return JsonResponse

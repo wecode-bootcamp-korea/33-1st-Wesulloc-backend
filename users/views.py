@@ -33,7 +33,7 @@ class SignUpView(View):
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
 
-            if User.objects.filter(accountt=account).exists():
+            if User.objects.filter(account=account).exists():
                 return JsonResponse({"Message": "ERROR_ACCOUNT_ALREADY_EXIST"}, status=400)
 
             if User.objects.filter(contact=contact).exists():

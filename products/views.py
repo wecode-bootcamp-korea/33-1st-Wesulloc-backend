@@ -7,8 +7,7 @@ from django.db.models import Q, Count, Sum
 
 from products.models  import Product, Menu
 
-
-logger = logging.getLogger()
+# logger = logging.getLogger()
 
 class CategoryView(View):
     def get(self, reqeust):

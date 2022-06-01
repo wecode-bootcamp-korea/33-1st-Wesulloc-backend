@@ -11,7 +11,7 @@ from products.models  import Product, Menu
 
 class CategoryView(View):
     def get(self, reqeust):
-        menus = Menu.objects.all()
+        # menus = Menu.objects.all()
         menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
 
         category_list = [{

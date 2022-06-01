@@ -10,10 +10,12 @@ from carts.models     import Cart
 class CartView(View):
     @access_token_check
     def get(self, request):
-        user = request.user
-        carts = Cart.objects.prefetch_related('productimage_set').filter(user_id = user.id)
+        user = request.user.id
+        carts = Cart.objects.filter(user_id = user)
+        # carts = Cart.objects.prefetch_related('productimage_set').filter(user_id = user.id)
+
         cart_list = [{
-            "user_id" : user.id,
+            "user_id" : user,
             "cart_id" : cart.id,
             "product_id" : cart.product.id,
             "product_name" : cart.product.name,
@@ -53,11 +55,10 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
-            user = request.user
-            cart_id = data['cart_id']
+            user = request.user.id
             quantity = data['quantity']
 
-            cart = Cart.objects.get(id=cart_id, user_id=user.id)
+            cart = Cart.objects.get(id=cart_id, user_id=user)
 
             cart.quantity = quantity
             cart.save()
@@ -68,13 +69,13 @@ class CartView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
         except Cart.DoesNotExist:
             return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
-            
-    def delete(self, request):
-        # DELETE /carts?ids=[1,2,3]
-        user = request.user
-        user = User.objects.get(id=1)
-        cart_ids = request.GET.getlist('cart_ids')
 
-        Cart.objects.filter(id__in=cart_ids, user_id=user.id).delete()
+    @access_token_check
+    def delete(self, request, *args, **kwargs):
+        # DELETE /carts?ids=[1,2,3]
+        user = request.user.id
+        cart_ids = request.GET.getlist('cart_id')
+
+        Cart.objects.filter(id__in=cart_ids, user_id=user).delete()
 
         return JsonResponse({"message" : "SUCCESS"}, status=200)

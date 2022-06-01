@@ -19,19 +19,19 @@ class SignUpView(View):
             name             = data['user_name']
             email            = data['user_email']
             password         = data['user_password']
-            address          = data['user_address']
+            # address          = data['user_address']
             contact          = data['user_contact']
             birth            = data['user_birth']
-            gender           = data['user_gender']
+            # gender           = data['user_gender']
             terms_agreements = data['user_terms_agreements']
             
-            REX_ACCOUNT  = '^[a-z]+[a-z0-9]{5,19}$'
-            REX_MAIL     = '^[a-z0-9_+.-]+@([a-z0-9-]+\.)+[a-z0-9]{2,4}$'
-            REX_PASSWORD = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
+            REX_ACCOUNT  = '^^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{4,12}$' # 4~12자 대소 영문,숫자 조합
+            # REX_MAIL     = '^[a-z0-9_+.-]+@([a-z0-9-]+\.)+[a-z0-9]{2,4}$'
+            REX_PASSWORD = '^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{8,16}$' # 8~16자 특수문자, 숫자, 영문자 조합
             REX_BIRTH    = '^(19[0-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'
 
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
+            # if User.objects.filter(email=email).exists():
+                # return JsonResponse({"Message": "ERROR_EMAIL_ALREADY_EXIST"}, status=400)
 
             if User.objects.filter(account=account).exists():
                 return JsonResponse({"Message": "ERROR_ACCOUNT_ALREADY_EXIST"}, status=400)
@@ -42,8 +42,8 @@ class SignUpView(View):
             if not re.match(REX_ACCOUNT, account):
                 return JsonResponse({"Message": "INVALID_ACCOUNT"}, status=400)
             
-            if not re.match(REX_MAIL, email):
-                return JsonResponse({"Message": "INVALID_MAIL"}, status=400)
+            # if not re.match(REX_MAIL, email):
+                # return JsonResponse({"Message": "INVALID_MAIL"}, status=400)
 
             if not re.match(REX_PASSWORD, password):
                 return JsonResponse({"Message": "INVALID_PASSWORD"}, status=400)
@@ -58,10 +58,10 @@ class SignUpView(View):
                 name             = name,
                 email            = email,
                 password         = hashed_password,
-                address          = address,
+                # address          = address,
                 contact          = contact,
                 birth            = birth,
-                gender           = gender,
+                # gender           = gender,
                 terms_agreements = terms_agreements
             )
 
@@ -84,6 +84,10 @@ class LogInView(View):
 
             return JsonResponse({
                 "message"      : "SUCCESS",
+
+
+
+                
                 "access_token" : access_token
             }, status=200)
 

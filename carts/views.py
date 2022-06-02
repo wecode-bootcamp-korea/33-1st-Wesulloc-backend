@@ -12,7 +12,8 @@ class CartView(View):
     def get(self, request):
         user = request.user
         carts = Cart.objects.filter(user_id = user.id)
-        # carts = Cart.objects.prefetch_related('productimage_set').filter(user_id = user.id)
+        # carts = Cart.objects.prefetch_related('product.productimage_set').filter(user_id = user.id)
+
         cart_list = [{
             "user_id" : user.id,
             "cart_id" : cart.id,
@@ -55,7 +56,6 @@ class CartView(View):
             data = json.loads(request.body)
 
             user = request.user
-            cart_id = data['cart_id']
             quantity = data['quantity']
 
             cart = Cart.objects.get(id=cart_id, user_id=user.id)
@@ -71,7 +71,7 @@ class CartView(View):
             return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
 
     @access_token_check
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request):
         # DELETE /carts?cart_id=29&cart_id=30
         # or
         # DELETE /carts?ids=[1,2,3]
@@ -82,10 +82,12 @@ class CartView(View):
 
         return JsonResponse({"message" : "SUCCESS"}, status=200)
 
-    ####### 멘토님과 함께 짠 코드    
+    # ###### 멘토님과 함께 짠 코드    
     # @access_token_check
     # def delete(self, request):
-    #     # DELETE /carts?ids=[1,2,3] ??????
+    #     DELETE /carts?ids=[1,2,3] ??????
+    #     DELETE /carts?ids=1,2,3
+    #     DELETE /carts?ids=1&ids=2&ids=3
     #     user = request.user.id
     #     cart_ids = request.GET.getlist('cart_ids')
 

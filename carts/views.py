@@ -72,17 +72,23 @@ class CartView(View):
 
     @access_token_check
     def delete(self, request):
-        # DELETE /carts?cart_id=29&cart_id=30
-        # or
-        # DELETE /carts?ids=[1,2,3]
-        user = request.user.id
+        # # DELETE /carts?cart_id=29&cart_id=30
+        # # or
+        # # DELETE /carts?ids=[1,2,3]
+        # user = request.user.id
+        # cart_ids = request.GET.get('cart_ids')
+        # print(type(cart_ids)) # str
+        # print(cart_ids) #'[1,2,3]'
+        # print(type(json.loads(cart_ids))) #[1,2,3]
+        # print(cart_ids)
+
         cart_ids = request.GET.getlist('cart_id')
 
         Cart.objects.filter(id__in=cart_ids, user_id=user).delete()
 
         return JsonResponse({"message" : "SUCCESS"}, status=200)
 
-    # ###### 멘토님과 함께 짠 코드    
+    ###### 멘토님과 함께 짠 코드    
     # @access_token_check
     # def delete(self, request):
     #     DELETE /carts?ids=[1,2,3] ??????

@@ -4,16 +4,17 @@ from django.http      import JsonResponse
 from django.views     import View
 from core.utils       import access_token_check
 
+from users.models     import User
 from carts.models     import Cart
 
 class CartView(View):
     @access_token_check
     def get(self, request):
-        user = request.user
-        carts = Cart.objects.filter(user_id = user.id)
+        user = request.user.id
+        carts = Cart.objects.filter(user_id = user)
 
         cart_list = [{
-            "user_id" : user.id,
+            "user_id" : user,
             "cart_id" : cart.id,
             "product_id" : cart.product.id,
             "product_name" : cart.product.name,
@@ -54,7 +55,7 @@ class CartView(View):
             user = request.user
             quantity = data['quantity']
 
-            cart = Cart.objects.get(id=cart_id, user_id=user.id)
+            cart = Cart.objects.get(id=cart_id, user_id=user)
 
             cart.quantity = quantity
             cart.save()

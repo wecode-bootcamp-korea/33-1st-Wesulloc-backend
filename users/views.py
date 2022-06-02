@@ -21,7 +21,7 @@ class SignUpView(View):
             contact          = data['user_contact']
             birth            = data['user_birth']
             terms_agreements = data['user_terms_agreements']
-
+            
             REX_ACCOUNT  = '^^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{4,12}$'
             REX_PASSWORD = '^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{8,16}$'
             REX_BIRTH    = '^(19[0-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'
@@ -71,7 +71,7 @@ class LogInView(View):
             access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
 
             return JsonResponse({
-                "message"      : "SUCCESS",
+                "message"      : "SUCCESS",     
                 "access_token" : access_token
             }, status=200)
 

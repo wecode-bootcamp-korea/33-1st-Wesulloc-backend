@@ -36,7 +36,7 @@ class ProductListView(View):
         category      = request.GET.get('category', None)
         search        = request.GET.get('search')
         sort          = request.GET.get('sort', 'new')
-        limit         = int(request.GET.get('limit', 12))
+        limit         = int(request.GET.get('limit', 25))
         offset        = int(request.GET.get('offset',0))
 
         # filter_set = {

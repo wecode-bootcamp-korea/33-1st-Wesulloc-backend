@@ -11,8 +11,8 @@ from products.models  import Product, Menu
 
 class CategoryView(View):
     def get(self, reqeust):
-        # menus = Menu.objects.all()
-        menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
+        menus = Menu.objects.all()
+        # menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
 
         category_list = [{
             'menu_id'      : menu.id,
@@ -38,14 +38,6 @@ class ProductListView(View):
         sort          = request.GET.get('sort', 'new')
         limit         = int(request.GET.get('limit', 12))
         offset        = int(request.GET.get('offset',0))
-
-        # filter_set = {
-        #     'main_category' : 'categoryproduct__category__main_category__id',
-        #     'menu' : 'categoryproduct__category__main_category__menu__id',
-        #     'category' : 'categoryproduct__category__id'
-        # }
-
-        # filter = {filter_set[key] : value for key, value in request.GET.items()}
 
         q = Q()
 
@@ -83,7 +75,7 @@ class ProductListView(View):
                 "name"         : product.name,
                 "price"        : product.price,
                 "discount_rate": product.discount_rate,
-                "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
+                "novel"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
                 "sale_or_not"  : False if product.discount_rate == 0 else True,
                 "img_url"      : [image.img_url for image in product.productimage_set.all()],
         } for product in products]
@@ -97,7 +89,7 @@ class ProductDetailView(View):
 
             product_detail = {
                     "id"          : product.id,
-                    "img"         : [image.img_url for image in product.productimage_set.all()],
+                    "img"         : [image.img_url for image in product.productimage_set.all()][0],
                     "name"        : product.name,
                     "price"       : product.price,
                     "salePercent" : product.discount_rate,

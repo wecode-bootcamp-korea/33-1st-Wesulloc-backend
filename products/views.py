@@ -7,12 +7,11 @@ from django.db.models import Q, Count, Sum
 
 from products.models  import Product, Menu
 
-
 # logger = logging.getLogger()
 
 class CategoryView(View):
     def get(self, reqeust):
-        menus = Menu.objects.all()
+        # menus = Menu.objects.all()
         menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
 
         category_list = [{

@@ -12,7 +12,6 @@ from django.conf   import settings
 class SignUpView(View):
     def post(self, request):
         try:
-
             data = json.loads(request.body)
 
             account          = data['user_account']

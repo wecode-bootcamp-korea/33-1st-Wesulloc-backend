@@ -9,8 +9,8 @@ from carts.models     import Cart
 class CartView(View):
     @access_token_check
     def get(self, request):
-        user = request.user.id
-        carts = Cart.objects.filter(user_id = user)
+        user = request.user
+        carts = Cart.objects.filter(user_id = user.id)
 
         cart_list = [{
             "user_id" : user,
@@ -51,7 +51,7 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
-            user = request.user.id
+            user = request.user
             quantity = data['quantity']
 
             cart = Cart.objects.get(id=cart_id, user_id=user)
@@ -67,7 +67,7 @@ class CartView(View):
             return JsonResponse({"message" : "CART_DOES_NOT_EXIST"}, status=404)
 
     @access_token_check
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request):
         user = request.user.id
         cart_ids = request.GET.getlist('cart_id')
 

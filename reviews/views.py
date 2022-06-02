@@ -10,8 +10,6 @@ from products.models import Product
 from reviews.models     import Review
 from django.db.models import Count, Sum, Avg
 
-
-
 class ReviewView(View):
     @access_token_check
     def post(self, request, product_id):
@@ -65,19 +63,3 @@ class ReviewView(View):
             return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
         except Review.DoesNotExist:
             return JsonResponse({"message" : "CONTENT_DOES_NOT_EXIST"}, status=404)
-
-
-    # @login_decorator
-    # def delete(self, request, product_id, review_id):
-    #     Review.objects.filter(id = review_id, user_id = request.user.id).delete()
-    #     return JsonResponse({‘Message’ : ‘NO_CONTENT’}, status = 200)
-
-    # @access_token_check
-    # def delete(self, request, *args, **kwargs):
-    #     # DELETE /carts?ids=[1,2,3]
-    #     user = request.user.id
-    #     cart_ids = request.GET.getlist('cart_id')
-
-    #     Cart.objects.filter(id__in=cart_ids, user_id=user).delete()
-
-    #     return JsonResponse({"message" : "SUCCESS"}, status=200)

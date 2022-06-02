@@ -9,7 +9,7 @@ class User(TimeStampModel):
     address          = models.CharField(max_length=100)
     contact          = models.CharField(max_length=45, unique=True)
     birth            = models.DateField()
-    email            = models.CharField(max_length=50, unique=True)
+    email            = models.CharField(max_length=50)
     gender           = models.CharField(max_length=30)
     terms_agreements = models.JSONField()
 

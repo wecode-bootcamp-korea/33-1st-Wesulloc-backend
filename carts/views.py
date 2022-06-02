@@ -4,7 +4,6 @@ from django.http      import JsonResponse
 from django.views     import View
 from core.utils       import access_token_check
 
-from users.models     import User
 from carts.models     import Cart
 
 class CartView(View):
@@ -12,7 +11,6 @@ class CartView(View):
     def get(self, request):
         user = request.user.id
         carts = Cart.objects.filter(user_id = user)
-        # carts = Cart.objects.prefetch_related('productimage_set').filter(user_id = user.id)
 
         cart_list = [{
             "user_id" : user,
@@ -27,7 +25,6 @@ class CartView(View):
     
     @access_token_check
     def post(self, request):
-        # POST /carts
         try:
             data = json.loads(request.body)
             user = request.user          
@@ -51,7 +48,6 @@ class CartView(View):
     
     @access_token_check
     def patch(self, request, cart_id):
-        # PATCH /carts/1
         try:
             data = json.loads(request.body)
 
@@ -72,7 +68,6 @@ class CartView(View):
 
     @access_token_check
     def delete(self, request, *args, **kwargs):
-        # DELETE /carts?ids=[1,2,3]
         user = request.user.id
         cart_ids = request.GET.getlist('cart_id')
 

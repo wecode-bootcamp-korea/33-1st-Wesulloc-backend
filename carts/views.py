@@ -12,14 +12,14 @@ class CartView(View):
     def get(self, request):
         user = request.user
         carts = Cart.objects.filter(user_id = user.id)
-        # carts = Cart.objects.prefetch_related('product.productimage_set').filter(user_id = user.id)
+        # carts = Cart.objects.prefetch_related('product__productimage_set').filter(user_id = user.id)
 
         cart_list = [{
             "user_id" : user.id,
             "cart_id" : cart.id,
             "product_id" : cart.product.id,
             "product_name" : cart.product.name,
-            "product_img" : cart.product.productimage_set.first().img_url,
+            "product_img" : cart.product.productimage_set.all()[0].img_url,
             "price" : cart.product.price,
             "quantity" : cart.quantity,
         } for cart in carts]

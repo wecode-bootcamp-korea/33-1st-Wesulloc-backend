@@ -4,13 +4,14 @@ from django.http      import JsonResponse
 from django.views     import View
 from core.utils       import access_token_check
 
+from users.models     import User
 from carts.models     import Cart
 
 class CartView(View):
     @access_token_check
     def get(self, request):
-        user = request.user
-        carts = Cart.objects.filter(user_id = user.id)
+        user = request.user.id
+        carts = Cart.objects.filter(user_id = user)
 
         cart_list = [{
             "user_id" : user,

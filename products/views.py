@@ -36,7 +36,7 @@ class ProductListView(View):
         category      = request.GET.get('category', None)
         search        = request.GET.get('search')
         sort          = request.GET.get('sort', 'new')
-        limit         = int(request.GET.get('limit', 12))
+        limit         = int(request.GET.get('limit', 25))
         offset        = int(request.GET.get('offset',0))
 
         # filter_set = {
@@ -96,16 +96,16 @@ class ProductDetailView(View):
             product = Product.objects.prefetch_related('productimage_set').get(id=kwargs["product_id"])
 
             product_detail = {
-                    "id"          : product.id,
-                    "img"         : [image.img_url for image in product.productimage_set.all()],
-                    "name"        : product.name,
-                    "price"       : product.price,
-                    "salePercent" : product.discount_rate,
-                    "novel"       : True if product in Product.objects.all().order_by('-id')[:2] else False,
-                    "sale"        : False if product.discount_rate == 0 else True,
-                    "description" : product.description,
-                    "subCategory" : product.categoryproduct_set.filter().last().category.name,
-                    "mainCategory": product.categoryproduct_set.filter().last().category.main_category.name,
+                    "id"           : product.id,
+                    "img_url"      : [image.img_url for image in product.productimage_set.all()],
+                    "name"         : product.name,
+                    "price"        : product.price,
+                    "discount_rate": product.discount_rate,
+                    "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
+                    "sale_or_not"  : False if product.discount_rate == 0 else True,
+                    "description"  : product.description,
+                    "category"     : product.categoryproduct_set.filter().last().category.name,
+                    "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
             }
 
             return JsonResponse({'results' : product_detail}, status=200)

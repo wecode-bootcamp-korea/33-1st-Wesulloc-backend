@@ -12,18 +12,18 @@ class ReviewView(View):
     @access_token_check
     def post(self, request, product_id):
         try:
-            data = json.loads(request.body)
-            user = request.user
-            rating = data['rating']
+            data    = json.loads(request.body)
+            user    = request.user
+            rating  = data['rating']
             content = data['content']
 
             product = Product.objects.get(id = product_id)
 
             Review.objects.create(
-                user_id = user.id,
+                user_id    = user.id,
                 product_id = product.id,
-                content = content,
-                rating = rating
+                content    = content,
+                rating     = rating
             )
             return JsonResponse({"message" : "SUCCESS"}, status=200)
 
@@ -44,11 +44,11 @@ class ReviewView(View):
 
         review_list = [{
             "reviewId" : review.id,
-            "productId" : product_id,
-            "account" : review.user.account,
-            "content" : review.content,
-            "rating" : review.rating,
-            "date" : review.created_at,
+            "productId": product_id,
+            "account"  : review.user.account,
+            "content"  : review.content,
+            "rating"   : review.rating,
+            "date"     : review.created_at,
         } for review in reviews[offset:offset+limit]]
 
         return JsonResponse({"totalReviews" : total_reviews, "averageRating": round(float(average_rates["avg_rating"]),1), "reviews" : review_list}, status=200)

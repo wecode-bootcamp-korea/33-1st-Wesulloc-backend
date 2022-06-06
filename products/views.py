@@ -11,8 +11,8 @@ from products.models  import Product, Menu
 
 class CategoryView(View):
     def get(self, reqeust):
-        # menus = Menu.objects.all()
-        menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
+        menus = Menu.objects.all()
+        # menus = Menu.objects.all().prefetch_related('maincategory_set', 'maincategory_set__category_set')
 
         category_list = [{
             'menu_id'      : menu.id,
@@ -36,16 +36,8 @@ class ProductListView(View):
         category      = request.GET.get('category', None)
         search        = request.GET.get('search')
         sort          = request.GET.get('sort', 'new')
-        limit         = int(request.GET.get('limit', 25))
+        limit         = int(request.GET.get('limit', 12))
         offset        = int(request.GET.get('offset',0))
-
-        # filter_set = {
-        #     'main_category' : 'categoryproduct__category__main_category__id',
-        #     'menu' : 'categoryproduct__category__main_category__menu__id',
-        #     'category' : 'categoryproduct__category__id'
-        # }
-
-        # filter = {filter_set[key] : value for key, value in request.GET.items()}
 
         q = Q()
 
@@ -83,7 +75,7 @@ class ProductListView(View):
                 "name"         : product.name,
                 "price"        : product.price,
                 "discount_rate": product.discount_rate,
-                "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
+                "novel"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
                 "sale_or_not"  : False if product.discount_rate == 0 else True,
                 "img_url"      : [image.img_url for image in product.productimage_set.all()],
         } for product in products]
@@ -96,16 +88,16 @@ class ProductDetailView(View):
             product = Product.objects.prefetch_related('productimage_set').get(id=kwargs["product_id"])
 
             product_detail = {
-                    "id"           : product.id,
-                    "img_url"      : [image.img_url for image in product.productimage_set.all()],
-                    "name"         : product.name,
-                    "price"        : product.price,
-                    "discount_rate": product.discount_rate,
-                    "new"          : True if product in Product.objects.all().order_by('-id')[:2] else False,
-                    "sale_or_not"  : False if product.discount_rate == 0 else True,
-                    "description"  : product.description,
-                    "category"     : product.categoryproduct_set.filter().last().category.name,
-                    "main_category": product.categoryproduct_set.filter().last().category.main_category.name,
+                    "id"          : product.id,
+                    "img"         : [image.img_url for image in product.productimage_set.all()][0],
+                    "name"        : product.name,
+                    "price"       : product.price,
+                    "salePercent" : product.discount_rate,
+                    "novel"       : True if product in Product.objects.all().order_by('-id')[:2] else False,
+                    "sale"        : False if product.discount_rate == 0 else True,
+                    "description" : product.description,
+                    "subCategory" : product.categoryproduct_set.filter().last().category.name,
+                    "mainCategory": product.categoryproduct_set.filter().last().category.main_category.name,
             }
 
             return JsonResponse({'results' : product_detail}, status=200)

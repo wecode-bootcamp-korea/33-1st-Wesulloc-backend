@@ -6,7 +6,8 @@ from core.utils       import access_token_check
 
 from products.models  import Product
 from reviews.models   import Review
-from django.db.models import Avg
+from django.db.models import Avg, FloatField
+from django.db.models.functions import Coalesce
 
 class ReviewView(View):
     @access_token_check
@@ -40,7 +41,9 @@ class ReviewView(View):
         reviews = Review.objects.filter(product_id = product_id)
 
         total_reviews = reviews.count()
-        average_rates = reviews.aggregate(avg_rating=Avg('rating'))
+        average_rates = reviews.aggregate(avg_rating=Avg('rating'))["avg_rating"] or 0
+        # ToDo: 아래 코드에서 dict형태로 나오는 것을 dict에서 빼내는 방법
+        # average_rates = reviews.aggregate(avg_rating=Coalesce(Avg('rating'), 0.00, output_field=FloatField()))
 
         review_list = [{
             "reviewId" : review.id,
@@ -51,7 +54,7 @@ class ReviewView(View):
             "date"     : review.created_at,
         } for review in reviews[offset:offset+limit]]
 
-        return JsonResponse({"totalReviews" : total_reviews, "averageRating": round(float(average_rates["avg_rating"]),1), "reviews" : review_list}, status=200)
+        return JsonResponse({"totalReviews" : total_reviews, "averageRating": round(float(average_rates), 1), "reviews" : review_list}, status=200)
 
     @access_token_check
     def delete(self, request, product_id, review_id):
